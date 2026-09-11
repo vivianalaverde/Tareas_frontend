@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Mis tareas</title>
+</head>
+<body>
+    <div>
+        <h1>Lista de Tareas</h1>
+        <div>
+            <input type="text" id="titulo" placeholder="titulo de la tarea">
+            <input type="text" id="descripcion" placeholder="Descripcion de la tarea">
+            <button onclick="guardartarea()">Guardar Tarea</button>
+        </div>
+        <div id="lista-tareas"></div>
+        <!-- Las tareas aparecen aqui-->
+    </div>
+    <script>
+        // Importante: cuando despleguemos el backend en Railway, ponemos la URL en la const BACKEND_URL
+        // Si estamos en local, ponemos la de localhost
+        const BACKEND_URL ="http://127.0.0.1:8000";
+
+        // Funcion para obtener las tareas del backend
+        // await: lo que hace es esperar la respuesta antes de continuar
+        async function cargarTareas(){
+            try{
+                const respuesta = await fetch(`${BACKEND_URL}/tareas`);
+                const tareas = await respuesta.json()
+
+                const contenedor = document.getElementById("lista-tareas")
+                contenedor.innerHTML = ""; // Para que limpie todas las tareas
+
+                tareas.forEach(tarea =>{
+                    contenedor.innerHTML += `
+                    <div class = "tarea">
+                        <strong>${tarea.titulo}</strong>
+                        <p style = "margin: 5px 0;">${tarea.descripcion}</p>
+                    </div>`;
+                })
+            }catch (error) {
+                console.error("Error. conectando al backend", error)
+            }
+        }
+
+        async function guardartarea(){
+            const titulo = document.getElementById("titulo").value;
+            const descripcion = document.getElementById("descripcion").value;
+            
+            if (!titulo) return alert ("El titulo es obligatorio")
+            // Hacemos un POST a la ruta del backend 
+            // El encode convierte los caracteres en un formato adecuado que llegue al backend
+            await fetch(`${BACKEND_URL}/tareas?titulo=${encodeURIComponent(titulo)}&descripcion=${encodeURIComponent(descripcion)}`,{
+                method: "POST"
+        });
+
+        // Limpiar los campos
+        document.getElementById("titulo").value="";
+        document.getElementById("descripcion").value="";
+        cargarTareas();
+
+        }
+        // Cargas Tareas al inciar la pagina
+        cargarTareas();
+    </script>
+</body>
+</html>
